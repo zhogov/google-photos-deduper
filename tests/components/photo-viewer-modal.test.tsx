@@ -236,3 +236,149 @@ describe("PhotoViewerModal — close", () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 })
+
+// ============================================================
+// Keyboard Keep Toggling (ArrowUp / ArrowDown)
+// ============================================================
+
+describe("PhotoViewerModal — keyboard keep toggling", () => {
+  it("calls onToggleKept when pressing ArrowUp on a non-kept image", () => {
+    const onToggleKept = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        initialIndex={1}
+        onToggleKept={onToggleKept}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowUp" })
+    expect(onToggleKept).toHaveBeenCalledWith("img2")
+  })
+
+  it("does NOT call onToggleKept when pressing ArrowUp on an already kept image", () => {
+    const onToggleKept = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        initialIndex={0}
+        onToggleKept={onToggleKept}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowUp" })
+    expect(onToggleKept).not.toHaveBeenCalled()
+  })
+
+  it("calls onToggleKept when pressing ArrowDown on a kept image", () => {
+    const onToggleKept = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        initialIndex={0}
+        onToggleKept={onToggleKept}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowDown" })
+    expect(onToggleKept).toHaveBeenCalledWith("img1")
+  })
+
+  it("does NOT call onToggleKept when pressing ArrowDown on a non-kept image", () => {
+    const onToggleKept = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        initialIndex={1}
+        onToggleKept={onToggleKept}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowDown" })
+    expect(onToggleKept).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================
+// Shift Keyboard Group Shortcuts
+// ============================================================
+
+describe("PhotoViewerModal — Shift keyboard group shortcuts", () => {
+  it("calls onToggleGroup (if not selected) and onNextGroup on Shift + ArrowUp", () => {
+    const onToggleGroup = vi.fn()
+    const onNextGroup = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        isGroupSelected={false}
+        onToggleGroup={onToggleGroup}
+        onNextGroup={onNextGroup}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowUp", shiftKey: true })
+    expect(onToggleGroup).toHaveBeenCalledOnce()
+    expect(onNextGroup).toHaveBeenCalledOnce()
+  })
+
+  it("does NOT call onToggleGroup (if already selected) but still calls onNextGroup on Shift + ArrowUp", () => {
+    const onToggleGroup = vi.fn()
+    const onNextGroup = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        isGroupSelected={true}
+        onToggleGroup={onToggleGroup}
+        onNextGroup={onNextGroup}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowUp", shiftKey: true })
+    expect(onToggleGroup).not.toHaveBeenCalled()
+    expect(onNextGroup).toHaveBeenCalledOnce()
+  })
+
+  it("calls onToggleGroup on Shift + ArrowDown if group is selected", () => {
+    const onToggleGroup = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        isGroupSelected={true}
+        onToggleGroup={onToggleGroup}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowDown", shiftKey: true })
+    expect(onToggleGroup).toHaveBeenCalledOnce()
+  })
+
+  it("does NOT call onToggleGroup on Shift + ArrowDown if group is not selected", () => {
+    const onToggleGroup = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        isGroupSelected={false}
+        onToggleGroup={onToggleGroup}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowDown", shiftKey: true })
+    expect(onToggleGroup).not.toHaveBeenCalled()
+  })
+
+  it("calls onPrevGroup on Shift + ArrowLeft", () => {
+    const onPrevGroup = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        onPrevGroup={onPrevGroup}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowLeft", shiftKey: true })
+    expect(onPrevGroup).toHaveBeenCalledOnce()
+  })
+
+  it("calls onNextGroup on Shift + ArrowRight", () => {
+    const onNextGroup = vi.fn()
+    wrap(
+      <PhotoViewerModal
+        {...defaultProps}
+        onNextGroup={onNextGroup}
+      />
+    )
+    fireEvent.keyDown(window, { key: "ArrowRight", shiftKey: true })
+    expect(onNextGroup).toHaveBeenCalledOnce()
+  })
+})

@@ -105,6 +105,10 @@ export interface PhotoViewerModalProps {
   keptSet: Set<string>
   isGroupSelected: boolean
   onClose: () => void
+  onToggleKept?: (mediaKey: string) => void
+  onToggleGroup?: () => void
+  onNextGroup?: () => void
+  onPrevGroup?: () => void
 }
 
 const slideInFromRight = keyframes`
@@ -123,6 +127,10 @@ export function PhotoViewerModal({
   keptSet,
   isGroupSelected,
   onClose,
+  onToggleKept,
+  onToggleGroup,
+  onNextGroup,
+  onPrevGroup,
 }: PhotoViewerModalProps) {
   const [index, setIndex] = useState(initialIndex)
   const [slideDir, setSlideDir] = useState<"forward" | "backward">("forward")
@@ -145,12 +153,46 @@ export function PhotoViewerModal({
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") navigate(Math.max(0, index - 1))
-      if (e.key === "ArrowRight") navigate(Math.min(items.length - 1, index + 1))
+      if (e.shiftKey) {
+        if (e.key === "ArrowUp") {
+          e.preventDefault()
+          if (!isGroupSelected) {
+            onToggleGroup?.()
+          }
+          onNextGroup?.()
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault()
+          if (isGroupSelected) {
+            onToggleGroup?.()
+          }
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault()
+          onPrevGroup?.()
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault()
+          onNextGroup?.()
+        }
+      } else {
+        if (e.key === "ArrowLeft") {
+          navigate(Math.max(0, index - 1))
+        } else if (e.key === "ArrowRight") {
+          navigate(Math.min(items.length - 1, index + 1))
+        } else if (e.key === "ArrowUp") {
+          const item = items[Math.min(index, items.length - 1)]
+          if (item && !keptSet.has(item.mediaKey)) {
+            onToggleKept?.(item.mediaKey)
+          }
+        } else if (e.key === "ArrowDown") {
+          const item = items[Math.min(index, items.length - 1)]
+          if (item && keptSet.has(item.mediaKey)) {
+            onToggleKept?.(item.mediaKey)
+          }
+        }
+      }
     }
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
-  }, [open, index, items.length])
+  }, [open, index, items, keptSet, isGroupSelected, onToggleKept, onToggleGroup, onNextGroup, onPrevGroup])
 
   if (items.length === 0) return null
 
